@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Providers from "./providers";
+import localFont from "next/font/local";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -10,6 +12,30 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const font = localFont({
+  src: [
+    {
+      path: "../../public/fonts/subset-RobotoMono-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/subset-RobotoMono-Regular.woff",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/subset-RobotoMono-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  display: "swap",
+  preload: true,
+  variable: "--font-roboto",
+  adjustFontFallback: false, // 로컬 폰트 우선 사용 설정
 });
 
 export const metadata: Metadata = {
@@ -23,9 +49,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+    <html lang="ko">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${font.variable}`}
+      >
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
