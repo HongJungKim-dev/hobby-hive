@@ -1,0 +1,49 @@
+name: CI/CD # 워크플로우의 이름
+
+on: # 워크플로우 트리거 설정
+  push: # push 이벤트 발생 시
+    branches: [main] # main 브랜치에서만
+  pull_request: # PR 이벤트 발생 시
+    branches: [main] # main 브랜치로 향하는 PR만
+
+jobs: # 실행할 작업들의 모음
+  build:
+    runs-on: ubuntu-latest # Ubuntu 최신 버전에서 실행
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+    steps: # 순차적으로 실행할 단계들
+      - uses:
+          actions/checkout@v3 # 저장소 코드를 가져오는 액션
+          # @v3는 액션의 버전
+
+      - name: Setup Node.js # Node.js 설정 단계
+        uses: actions/setup-node@v3 # Node.js 설치 액션
+        with: # 액션에 전달할 파라미터
+          node-version: "18" # Node.js 버전 18 사용
+          cache: "npm" # npm 캐시 사용
+
+      - name: Install dependencies # 의존성 설치 단계
+        run:
+          npm ci # npm clean install 실행
+          # package-lock.json 기반 설치
+
+      - name: Lint # 린트 단계
+        run: npm run lint # package.json의 lint 스크립트 실행
+
+      - name: Run tests # 테스트 실행 단계
+        run: npm test # 테스트 스크립트 실행
+
+      - name: Build # 빌드 단계
+        run: npm run build # 빌드 스크립트 실행
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npm install --global vercel
+          vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
