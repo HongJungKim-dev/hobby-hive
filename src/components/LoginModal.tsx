@@ -2,6 +2,7 @@
 
 import { Modal } from "antd";
 import AuthComponent from "./Auth";
+import useSession from "@hooks/useSession";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -9,6 +10,12 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, closeModal }: LoginModalProps) {
+  const session = useSession();
+
+  if (session) {
+    return null;
+  }
+
   return (
     <Modal
       open={isOpen}

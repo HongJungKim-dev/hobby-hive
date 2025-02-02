@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { MdPerson } from "react-icons/md";
 import LoginModal from "./LoginModal";
-import { useSession } from "@/hooks/useSession";
+import useSession from "@hooks/useSession";
 import { supabase } from "@utils/supabase";
 
 export default function ClientProfileButton() {
