@@ -1,0 +1,12 @@
+@import "./variables";
+
+html {
+  font-size: 62.5%; // 10px
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-size: 1.6rem;
+  line-height: 1.5;
+  font-family: var(--font-spoqa), -apple-system, sans-serif;
+}

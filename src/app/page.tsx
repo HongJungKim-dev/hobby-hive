@@ -1,102 +1,80 @@
-"use client";
+import { Suspense } from "react";
+import { supabase } from "@utils/supabase";
+import ClientImageGrid from "@components/ClientImageGrid";
 
-import { useEffect, useRef, useCallback } from "react";
-import { supabase } from "@/utils/supabase";
-import { useInfiniteQuery } from "@tanstack/react-query";
+// icons
+import { MdHome, MdSearch } from "react-icons/md";
+import { GoPlusCircle } from "react-icons/go";
 
-const PAGE_SIZE = 5; // 한 페이지당 9개 항목
+// style
+import "@styles/app/page.scss";
 
-export default function Home() {
-  const observerRef = useRef<IntersectionObserver>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+const PAGE_SIZE = 5;
 
-  const fetchMediaFiles = async ({ pageParam = 0 }) => {
-    const { data: files, error: filesError } = await supabase.storage
-      .from("media")
-      .list("", {
-        limit: PAGE_SIZE,
-        offset: pageParam * PAGE_SIZE,
-        sortBy: { column: "name", order: "asc" },
-      });
-
-    if (filesError) throw filesError;
-
-    const filesWithUrls = await Promise.all(
-      files.map(async (file) => {
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("media").getPublicUrl(file.name);
-        return { ...file, url: publicUrl };
-      })
-    );
-
-    return filesWithUrls;
-  };
-
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
-      queryKey: ["mediaFiles"],
-      queryFn: fetchMediaFiles,
-      initialPageParam: 0,
-      getNextPageParam: (lastPage, allPages) =>
-        lastPage.length === PAGE_SIZE ? allPages.length : undefined,
+// 서버 컴포넌트
+async function ImageGrid() {
+  const { data: initialFiles, error } = await supabase.storage
+    .from("media")
+    .list("", {
+      limit: PAGE_SIZE,
+      sortBy: { column: "name", order: "asc" },
     });
 
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    },
-    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  if (error) {
+    return <div>에러가 발생했습니다</div>;
+  }
+
+  const initialFilesWithUrls = await Promise.all(
+    initialFiles.map(async (file) => {
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("media").getPublicUrl(file.name);
+      return {
+        id: file.id,
+        name: file.name,
+        url: publicUrl,
+        metadata: {
+          mimetype: file.metadata?.mimetype || "unknown",
+        },
+      };
+    })
   );
 
-  useEffect(() => {
-    const element = loadMoreRef.current;
-    if (!element) return;
+  return <ClientImageGrid initialFiles={initialFilesWithUrls} />;
+}
 
-    observerRef.current = new IntersectionObserver(handleObserver, {
-      threshold: 0.1,
-    });
-    observerRef.current.observe(element);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [handleObserver]);
-
-  if (status === "error") return <div>에러가 발생했습니다</div>;
-
+// 메인 페이지
+export default function Home() {
   return (
-    <>
-      <h1 className="font-roboto">hobby-hive</h1>
-      <div>
-        <div>
-          {data?.pages.map((group) =>
-            group.map((file) => (
-              <div key={file.id}>
-                {file.metadata?.mimetype?.startsWith("image/") ? (
-                  <img
-                    src={file.url}
-                    alt={file.name}
-                    width={300}
-                    height={300}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <p>{file.name}</p>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-        <div ref={loadMoreRef} />
-        {isFetchingNextPage && <div>추가 데이터 로딩중...</div>}
-      </div>
-    </>
+    <main className="main --font-spoqa">
+      <article className="layout">
+        <nav className="layout-nav --font-roboto">
+          <h1 className="logo">hobby-hive</h1>
+          <ul className="nav-menu">
+            {[
+              { icon: <MdHome size={14} />, title: "홈" },
+              { icon: <MdSearch size={14} />, title: "검색" },
+              { icon: <GoPlusCircle size={14} />, title: "업로드" },
+            ].map((item) => (
+              <li key={`menu-item-${item.title}`} className="nav-item">
+                {item.icon}
+                <span>{item.title}</span>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <section className="layout-content">
+          <Suspense fallback={<div>로딩중...</div>}>
+            <ImageGrid />
+          </Suspense>
+        </section>
+      </article>
+    </main>
   );
 }
+
+// head 태그에 메타데이터 삽입
+export const metadata = {
+  title: "Hobby Hive - 메인 피드",
+  description: "다양한 취미 활동을 공유하는 공간입니다.",
+};

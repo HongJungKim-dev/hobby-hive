@@ -1,0 +1,58 @@
+@import "../variables";
+
+.main {
+  color: map-get($colors, "text-primary");
+  background-color: map-get($colors, "bg-primary");
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout {
+  display: flex;
+  flex: 1;
+  height: 100%;
+
+  &-nav {
+    display: flex;
+    flex-direction: column;
+    gap: map-get($spacing, "spacing-5");
+    flex-shrink: 0;
+    width: 26rem;
+    padding: map-get($spacing, "spacing-4");
+    border-right: 1px solid map-get($colors, "border-base");
+  }
+
+  &-content {
+    flex-basis: 0;
+    flex-grow: 1;
+    flex-shrink: 0;
+    padding: map-get($spacing, "spacing-3") 20rem;
+  }
+}
+
+.logo {
+  padding-top: map-get($spacing, "spacing-5");
+}
+
+.nav-menu {
+  list-style: none;
+  //   padding: 0;
+  //   margin-top: 2rem;
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: map-get($spacing, "spacing-2");
+    padding: map-get($spacing, "spacing-1") 0;
+    cursor: pointer;
+
+    // &:hover {
+    //   opacity: 0.7;
+    // }
+
+    // span {
+    //   font-size: 1rem;
+    // }
+  }
+}
