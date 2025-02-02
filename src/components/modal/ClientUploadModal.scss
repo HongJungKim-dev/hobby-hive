@@ -1,0 +1,27 @@
+@import "@styles/variables";
+
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: map-get($spacing, "spacing-3");
+}
+
+.header-right {
+  padding-right: map-get($spacing, "spacing-5");
+}
+
+.content-wrapper {
+  display: flex;
+  gap: 20px;
+
+  .text-save-area {
+    flex: 1;
+  }
+}
+
+.image-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacing, "spacing-3");
+}

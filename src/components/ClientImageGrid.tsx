@@ -4,17 +4,13 @@ import { useEffect, useRef, useCallback } from "react";
 import { supabase } from "@utils/supabase";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
+// types
+import { IFile } from "../types/types";
+
 const PAGE_SIZE = 5;
 
 interface ClientImageGridProps {
-  initialFiles: {
-    id: string;
-    name: string;
-    url: string;
-    metadata: {
-      mimetype: string;
-    };
-  }[];
+  initialFiles: IFile[];
 }
 
 export default function ClientImageGrid({
@@ -24,33 +20,20 @@ export default function ClientImageGrid({
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const fetchMediaFiles = async ({ pageParam = 0 }) => {
-    const { data: files, error: filesError } = await supabase.storage
-      .from("media")
-      .list("", {
-        limit: PAGE_SIZE,
-        offset: pageParam * PAGE_SIZE,
-        sortBy: { column: "name", order: "asc" },
-      });
+    const { data: files, error: filesError } = await supabase
+      .from("files_upload")
+      .select("*")
+      .range(pageParam * PAGE_SIZE, (pageParam + 1) * PAGE_SIZE - 1)
+      .order("created_at", { ascending: false });
 
     if (filesError) throw filesError;
 
-    const filesWithUrls = await Promise.all(
-      files.map(async (file) => {
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("media").getPublicUrl(file.name);
-        return {
-          id: file.id,
-          name: file.name,
-          url: publicUrl,
-          metadata: {
-            mimetype: file.metadata?.mimetype || "unknown",
-          },
-        };
-      })
-    );
-
-    return filesWithUrls;
+    return files.map((file) => ({
+      id: file.id,
+      file_path: file.file_path,
+      description: file.description,
+      created_at: new Date(file.created_at).toLocaleDateString("ko-KR"),
+    }));
   };
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
@@ -99,19 +82,16 @@ export default function ClientImageGrid({
       <div>
         {data?.pages.map((group, i) =>
           group.map((file) => (
-            <div key={file.id}>
-              {file.metadata?.mimetype?.startsWith("image/") ? (
-                <img
-                  src={file.url}
-                  alt={file.name}
-                  width={300}
-                  height={300}
-                  loading="lazy"
-                  decoding="async"
-                />
-              ) : (
-                <p>{file.name}</p>
-              )}
+            <div key={file.id} className="image-grid-container">
+              <img
+                src={file.file_path}
+                alt={file.description || "업로드된 이미지"}
+                width={300}
+                height={300}
+                loading="lazy"
+                decoding="async"
+              />
+              {file.description && <p>{file.description}</p>}
             </div>
           ))
         )}
