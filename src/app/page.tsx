@@ -10,7 +10,7 @@ import "@styles/app/page.scss";
 
 // modal
 import ClientUploadModalButton from "@components/modal/ClientUploadModalButton";
-
+import ClientProfileButton from "@components/ClientProfileButton";
 // types
 import { IFile } from "../types/types";
 
@@ -57,6 +57,7 @@ export default async function Home() {
               </li>
             ))}
             <ClientUploadModalButton />
+            <ClientProfileButton />
           </ul>
         </nav>
         <section className="layout-content">
