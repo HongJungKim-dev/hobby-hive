@@ -23,7 +23,8 @@
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
       "@styles/*": ["./src/styles/*"],
-      "@utils/*": ["./src/utils/*"]
+      "@utils/*": ["./src/utils/*"],
+      "@types/*": ["./src/types/*"]
     },
     "types": ["node", "jest"]
   },

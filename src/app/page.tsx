@@ -4,47 +4,37 @@ import ClientImageGrid from "@components/ClientImageGrid";
 
 // icons
 import { MdHome, MdSearch } from "react-icons/md";
-import { GoPlusCircle } from "react-icons/go";
 
 // style
 import "@styles/app/page.scss";
 
+// modal
+import ClientUploadModalButton from "@components/modal/ClientUploadModalButton";
+
+// types
+import { IFile } from "../types/types";
+
 const PAGE_SIZE = 5;
 
-// 서버 컴포넌트
-async function ImageGrid() {
-  const { data: initialFiles, error } = await supabase.storage
-    .from("media")
-    .list("", {
-      limit: PAGE_SIZE,
-      sortBy: { column: "name", order: "asc" },
-    });
+// 메인 페이지
+export default async function Home() {
+  const { data: uploadedFiles, error } = await supabase
+    .from("files_upload")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) {
-    return <div>에러가 발생했습니다</div>;
+    console.error("Error fetching files:", error);
+    return <div>데이터를 불러오는 중 오류가 발생했습니다.</div>;
   }
 
-  const initialFilesWithUrls = await Promise.all(
-    initialFiles.map(async (file) => {
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("media").getPublicUrl(file.name);
-      return {
-        id: file.id,
-        name: file.name,
-        url: publicUrl,
-        metadata: {
-          mimetype: file.metadata?.mimetype || "unknown",
-        },
-      };
-    })
-  );
+  const initialFiles = uploadedFiles.map((file: IFile) => ({
+    id: file.id,
+    file_path: file.file_path,
+    description: file.description,
+    created_at: new Date(file.created_at).toLocaleDateString("ko-KR"),
+  }));
 
-  return <ClientImageGrid initialFiles={initialFilesWithUrls} />;
-}
-
-// 메인 페이지
-export default function Home() {
   return (
     <main className="main --font-spoqa">
       <article className="layout">
@@ -52,20 +42,26 @@ export default function Home() {
           <h1 className="logo">hobby-hive</h1>
           <ul className="nav-menu">
             {[
-              { icon: <MdHome size={14} />, title: "홈" },
-              { icon: <MdSearch size={14} />, title: "검색" },
-              { icon: <GoPlusCircle size={14} />, title: "업로드" },
+              {
+                icon: <MdHome size={14} />,
+                title: "홈",
+              },
+              {
+                icon: <MdSearch size={14} />,
+                title: "검색",
+              },
             ].map((item) => (
               <li key={`menu-item-${item.title}`} className="nav-item">
                 {item.icon}
                 <span>{item.title}</span>
               </li>
             ))}
+            <ClientUploadModalButton />
           </ul>
         </nav>
         <section className="layout-content">
           <Suspense fallback={<div>로딩중...</div>}>
-            <ImageGrid />
+            <ClientImageGrid initialFiles={initialFiles} />
           </Suspense>
         </section>
       </article>
