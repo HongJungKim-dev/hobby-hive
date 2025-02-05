@@ -1,76 +1,16 @@
-import { Suspense } from "react";
-import { supabase } from "@utils/supabase";
-import ClientImageGrid from "@components/ClientImageGrid";
 
-// icons
-import { MdHome, MdSearch } from "react-icons/md";
-
-// style
-import "@styles/app/page.scss";
-
-// modal
-import ClientUploadModalButton from "@components/modal/ClientUploadModalButton";
-
-// types
-import { IFile } from "../types/types";
-
-const PAGE_SIZE = 5;
-
-// 메인 페이지
-export default async function Home() {
-  const { data: uploadedFiles, error } = await supabase
-    .from("files_upload")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Error fetching files:", error);
-    return <div>데이터를 불러오는 중 오류가 발생했습니다.</div>;
-  }
-
-  const initialFiles = uploadedFiles.map((file: IFile) => ({
-    id: file.id,
-    file_path: file.file_path,
-    description: file.description,
-    created_at: new Date(file.created_at).toLocaleDateString("ko-KR"),
-  }));
-
+export default function IntroPage() {
   return (
-    <main className="main --font-spoqa">
-      <article className="layout">
-        <nav className="layout-nav --font-roboto">
-          <h1 className="logo">hobby-hive</h1>
-          <ul className="nav-menu">
-            {[
-              {
-                icon: <MdHome size={14} />,
-                title: "홈",
-              },
-              {
-                icon: <MdSearch size={14} />,
-                title: "검색",
-              },
-            ].map((item) => (
-              <li key={`menu-item-${item.title}`} className="nav-item">
-                {item.icon}
-                <span>{item.title}</span>
-              </li>
-            ))}
-            <ClientUploadModalButton />
-          </ul>
-        </nav>
-        <section className="layout-content">
-          <Suspense fallback={<div>로딩중...</div>}>
-            <ClientImageGrid initialFiles={initialFiles} />
-          </Suspense>
-        </section>
-      </article>
+    <main>
+     <h1>나만의 취미 공간, 여기서 시작하세요!</h1>
     </main>
   );
 }
 
-// head 태그에 메타데이터 삽입
+// force-static으로 설정하여 항상 SSG로 동작하도록 함
+export const dynamic = 'force-static';
+
 export const metadata = {
-  title: "Hobby Hive - 메인 피드",
-  description: "다양한 취미 활동을 공유하는 공간입니다.",
-};
+  title: 'Hobby Hive - 취미 생활의 시작',
+  description: '취미 정보 제공 및 공유 플랫폼',
+}; 
