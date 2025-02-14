@@ -51,3 +51,9 @@ https://hobby-hive-eight.vercel.app
 ```bash
 npm run dev
 ```
+
+## 개인 블로그
+
+다음 내용은 별도의 개인 개발 블로그 입니다.
+
+https://chipped-watercress-330.notion.site/19a09179a636803ba476d65cf2c54348?pvs=4
