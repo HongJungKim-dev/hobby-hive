@@ -9,6 +9,7 @@ import {
 import { supabase } from "@utils/supabase";
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 // style
 import "./ClientUploadModal.scss";
@@ -25,6 +26,12 @@ export default function ClientUploadModal({
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [isNextStep, setIsNextStep] = useState(false);
   const [description, setDescription] = useState("");
+  const router = useRouter();
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return !!session;
+  };
 
   const handleUpload = async (file: File) => {
     const fileName = `${Date.now()}-${file.name}`;
@@ -131,6 +138,13 @@ export default function ClientUploadModal({
           multiple={true}
           customRequest={async ({ file, onSuccess, onError }) => {
             try {
+              const isAuth = await checkAuth();
+              if (!isAuth) {
+                if (window.confirm('로그인이 필요한 서비스입니다. 로그인 하시겠습니까?')) {
+                  router.push('/login');
+                }
+                return;
+              }
               const result = await handleUpload(file as File);
               if (result) {
                 onSuccess?.(null);
@@ -142,9 +156,7 @@ export default function ClientUploadModal({
             }
           }}
         >
-          <p>
-            <InboxOutlined />
-          </p>
+          <p><InboxOutlined /></p>
           <p>클릭하거나 파일을 이 영역으로 드래그하세요</p>
           <p>이미지 파일을 업로드할 수 있습니다</p>
         </Upload.Dragger>

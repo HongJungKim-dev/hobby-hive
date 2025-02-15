@@ -65,15 +65,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+  auth,
+}: {
   children: React.ReactNode;
-}>) {
+  auth: React.ReactNode;
+}) {
   return (
-    <html lang="ko">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${spoqaHanSans.variable}`}
-      >
-        <Providers>{children}</Providers>
+    <html lang="ko" >
+      <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${spoqaHanSans.variable}`}>
+        <Providers>
+          {auth}
+          {children}
+        </Providers>
       </body>
     </html>
   );
