@@ -10,7 +10,7 @@ import "@styles/app/page.scss";
 
 // modal
 import ClientUploadModalButton from "@components/modal/ClientUploadModalButton";
-
+import ClientProfileButton from "@components/ClientProfileButton";
 // types
 import { IFile } from "../types/types";
 
@@ -56,7 +56,10 @@ export default async function Home() {
                 <span>{item.title}</span>
               </li>
             ))}
-            <ClientUploadModalButton />
+            <Suspense fallback={<div>로딩중...</div>}>
+              <ClientUploadModalButton />
+              <ClientProfileButton />
+            </Suspense>
           </ul>
         </nav>
         <section className="layout-content">
