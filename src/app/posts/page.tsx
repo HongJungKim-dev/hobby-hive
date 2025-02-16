@@ -1,30 +1,24 @@
 import { Suspense } from "react";
-import { supabase } from "@utils/supabase";
 import ClientImageGrid from "@components/ClientImageGrid";
+import { IFile } from "@/types/types";
+import { createClient } from "@utils/supabase/server";
+import { redirect } from 'next/navigation';
 
-// icons
-import { MdHome, MdSearch } from "react-icons/md";
+export default async function PostsPage() {
+  const supabase = await createClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-// style
-import "@styles/app/page.scss";
+  if (!user) {
+    redirect('/login');
+  }
 
-// modal
-import ClientUploadModalButton from "@components/modal/ClientUploadModalButton";
-import ClientProfileButton from "@components/ClientProfileButton";
-// types
-import { IFile } from "../types/types";
-
-const PAGE_SIZE = 5;
-
-// 메인 페이지
-export default async function Home() {
   const { data: uploadedFiles, error } = await supabase
     .from("files_upload")
     .select("*")
+    .eq('user_id', user.id)
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching files:", error);
     return <div>데이터를 불러오는 중 오류가 발생했습니다.</div>;
   }
 
@@ -37,6 +31,7 @@ export default async function Home() {
 
   return (
     <section className="layout-content">
+      <h2>내가 올린 게시물</h2>
       <Suspense fallback={<div>로딩중...</div>}>
         <ClientImageGrid initialFiles={initialFiles} />
       </Suspense>
@@ -44,8 +39,3 @@ export default async function Home() {
   );
 }
 
-// head 태그에 메타데이터 삽입
-export const metadata = {
-  title: "Hobby Hive - 메인 피드",
-  description: "다양한 취미 활동을 공유하는 공간입니다.",
-};

@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "./providers";
 import localFont from "next/font/local";
 import "@styles/globals.scss";
+import Navigation from '@/components/Navigation';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -71,11 +72,16 @@ export default function RootLayout({
   auth: React.ReactNode;
 }) {
   return (
-    <html lang="ko" >
+    <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${spoqaHanSans.variable}`}>
         <Providers>
           {auth}
-          {children}
+          <main className="main --font-spoqa">
+            <article className="layout">
+              <Navigation />
+              {children}
+            </article>
+          </main>
         </Providers>
       </body>
     </html>
