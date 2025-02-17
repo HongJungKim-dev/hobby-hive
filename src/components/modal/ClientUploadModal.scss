@@ -24,4 +24,5 @@
   display: flex;
   flex-direction: column;
   gap: map-get($spacing, "spacing-3");
+  cursor: pointer;
 }

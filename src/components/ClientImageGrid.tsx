@@ -10,11 +10,13 @@ import { IFile } from "../types/types";
 const PAGE_SIZE = 5;
 
 interface ClientImageGridProps {
-  initialFiles: IFile[];
+  initialFiles: IFile[]
+  onClick?: (file: IFile) => void;
 }
 
 export default function ClientImageGrid({
   initialFiles,
+  onClick
 }: ClientImageGridProps) {
   const observerRef = useRef<IntersectionObserver>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -29,10 +31,11 @@ export default function ClientImageGrid({
     if (filesError) throw filesError;
 
     return files.map((file) => ({
-      id: file.id,
-      file_path: file.file_path,
-      description: file.description,
+      ...file,
       created_at: new Date(file.created_at).toLocaleDateString("ko-KR"),
+      updated_at: file.updated_at 
+        ? new Date(file.updated_at).toLocaleDateString("ko-KR")
+        : null
     }));
   };
 
@@ -82,7 +85,11 @@ export default function ClientImageGrid({
       <div>
         {data?.pages.map((group, i) =>
           group.map((file) => (
-            <div key={file.id} className="image-grid-container">
+            <div 
+              key={file.id} 
+              className="image-grid-container"
+              onClick={() => onClick && onClick(file)}
+            >
               <img
                 src={file.file_path}
                 alt={file.description || "업로드된 이미지"}

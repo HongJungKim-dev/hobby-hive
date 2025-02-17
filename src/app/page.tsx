@@ -33,6 +33,7 @@ export default async function Home() {
     file_path: file.file_path,
     description: file.description,
     created_at: new Date(file.created_at).toLocaleDateString("ko-KR"),
+    updated_at: file.updated_at ? new Date(file.updated_at).toLocaleDateString("ko-KR") : null,
   }));
 
   return (
