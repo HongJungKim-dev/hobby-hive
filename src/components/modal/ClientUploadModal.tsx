@@ -67,6 +67,7 @@ export default function ClientUploadModal({
             file_path: uploadedImageUrl,
             description: description,
             created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           },
         ]);
 

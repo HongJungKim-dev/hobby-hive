@@ -3,4 +3,6 @@ export interface IFile {
   file_path: string;
   description: string;
   created_at: string;
+  updated_at: string | null;
 }
+

@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import ClientImageGrid from "@components/ClientImageGrid";
 import { IFile } from "@/types/types";
 import { createClient } from "@utils/supabase/server";
 import { redirect } from 'next/navigation';
+import ClientGridWithModal from '@components/ClientGridWithModal';
 
 export default async function PostsPage() {
   const supabase = await createClient();
@@ -27,13 +27,14 @@ export default async function PostsPage() {
     file_path: file.file_path,
     description: file.description,
     created_at: new Date(file.created_at).toLocaleDateString("ko-KR"),
+    updated_at: file.updated_at ? new Date(file.updated_at).toLocaleDateString("ko-KR") : null,
   }));
 
   return (
     <section className="layout-content">
       <h2>내가 올린 게시물</h2>
       <Suspense fallback={<div>로딩중...</div>}>
-        <ClientImageGrid initialFiles={initialFiles} />
+        <ClientGridWithModal initialFiles={initialFiles} />
       </Suspense>
     </section>
   );
