@@ -14,6 +14,26 @@ https://hobby-hive-eight.vercel.app
 
 ![alt text](image.png)
 
+### 내 게시글 수정
+
+왼쪽 nav 로그인 > 올린글 > 내가 올린글 게시물 목록에서 해당 글 클릭 > 수정하기
+
+![image](https://github.com/user-attachments/assets/44623995-532d-4ebd-8417-e022875136a2)
+
+### 내 게시글 삭제
+
+왼쪽 nav 로그인 > 올린글 > 내가 올린글 게시물 목록에서 해당 글 클릭 > 삭제하기 > 삭제모달에서 삭제
+
+![image](https://github.com/user-attachments/assets/85d406ff-d401-457f-91c9-fbcdba1a1533)
+
+### 태블릿 반응형 레이아웃
+
+![image](https://github.com/user-attachments/assets/117309c6-94c3-4216-b192-d8724f8509e4)
+
+### 모바일 반응형 레이아웃
+
+![image](https://github.com/user-attachments/assets/78cac494-daee-4d25-9f6c-9fc3e89f613b)
+
 ## 기술 스택
 
 - Next.js, React, TypeScript
