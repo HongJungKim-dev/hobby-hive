@@ -10,6 +10,8 @@ import { supabase } from "@utils/supabase";
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 // style
 import "./ClientUploadModal.scss";
@@ -27,31 +29,95 @@ export default function ClientUploadModal({
   const [isNextStep, setIsNextStep] = useState(false);
   const [description, setDescription] = useState("");
   const router = useRouter();
+  const queryClient = useQueryClient();
+
+  // Modal이 닫힐 때 상태 초기화
+  const initializeStateWhenClose = () => {
+    setUploadedImageUrl(null);
+    setIsNextStep(false);
+    setDescription("");
+    onClose();
+  };
+
+  useEffect(() => {
+    return () => {
+      initializeStateWhenClose();
+    };
+  }, []);
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return !!session;
   };
 
-  const handleUpload = async (file: File) => {
-    const fileName = `${Date.now()}-${file.name}`;
-    const { error, data } = await supabase.storage
-      .from("media")
-      .upload(fileName, file);
+  // 파일 업로드 mutation
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
+      const fileExt = sanitizedFileName.split(".").pop();
+      const fileName = `${crypto.randomUUID()}-${sanitizedFileName}`;
 
-    if (error) {
+      const { error, data } = await supabase.storage
+        .from("media")
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("media")
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    },
+    onSuccess: (publicUrl) => {
+      setUploadedImageUrl(publicUrl);
+      message.success("파일이 성공적으로 업로드되었습니다.");
+    },
+    onError: () => {
       message.error("업로드 중 오류가 발생했습니다.");
-      return false;
     }
+  });
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("media").getPublicUrl(fileName);
+  // 설명 저장 mutation
+  const saveMutation = useMutation({
+    mutationFn: async ({ url, description }: { url: string, description: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("로그인이 필요합니다.");
 
-    setUploadedImageUrl(publicUrl);
-    message.success("파일이 성공적으로 업로드되었습니다.");
-    return true;
-  };
+      const { data, error } = await supabase
+        .from("files_upload")
+        .insert([
+          {
+            file_path: url,
+            description,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: user.id,
+          },
+        ]);
+
+      if (error) throw error;
+      return data;
+    },
+    retry: 1,  // 1번만 재시도
+    retryDelay: 1000,  // 단순히 1초 후 재시도
+    onSuccess: (data, variables) => {
+      message.success("이미지와 설명이 성공적으로 저장되었습니다.");
+      // 쿼리 무효화 및 리페치
+      queryClient.invalidateQueries({
+        queryKey: ['mediaFiles'],
+        exact: true,
+        refetchType: 'all'
+      });
+      onClose();
+    },
+    onError: (error) => {
+      console.error("Error:", error);
+      message.error("저장 중 오류가 발생했습니다. 자동으로 재시도합니다.");
+    },
+    mutationKey: ['saveMedia'],  // mutation 식별 키
+  });
+
 
   const handleSaveDescription = async () => {
     if (!uploadedImageUrl) {
@@ -59,26 +125,16 @@ export default function ClientUploadModal({
       return;
     }
 
-    try {
-      const { data: dbData, error: dbError } = await supabase
-        .from("files_upload")
-        .insert([
-          {
-            file_path: uploadedImageUrl,
-            description: description,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]);
-
-      if (dbError) throw dbError;
-
-      message.success("이미지와 설명이 성공적으로 저장되었습니다.");
-      onClose();
-    } catch (error) {
-      console.error("Error:", error);
-      message.error("저장 중 오류가 발생했습니다.");
+    // mutation이 이미 진행 중이면 새로운 요청은 무시됨
+    if (saveMutation.isPending) {
+      message.warning('저장 중입니다. 잠시만 기다려주세요.');
+      return;
     }
+
+    saveMutation.mutate({ 
+      url: uploadedImageUrl, 
+      description 
+    });
   };
 
   return (
@@ -105,7 +161,7 @@ export default function ClientUploadModal({
         </div>
       }
       open={isOpen}
-      onCancel={onClose}
+      onCancel={initializeStateWhenClose}
       footer={null}
     >
       {isNextStep ? (
@@ -123,13 +179,16 @@ export default function ClientUploadModal({
               placeholder="이미지에 대한 설명을 입력해주세요"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              disabled={saveMutation.isPending}
             />
             <Button
               type="primary"
               style={{ marginTop: "10px" }}
               onClick={handleSaveDescription}
+              loading={saveMutation.isPending}
+              disabled={saveMutation.isPending}
             >
-              저장하기
+              {saveMutation.isPending ? '저장중...' : '저장하기'}
             </Button>
           </div>
         </div>
@@ -146,20 +205,31 @@ export default function ClientUploadModal({
                 }
                 return;
               }
-              const result = await handleUpload(file as File);
-              if (result) {
-                onSuccess?.(null);
-              } else {
-                onError?.(new Error("업로드 실패"));
-              }
+
+              uploadMutation.mutate(file as File, {
+                onSuccess: () => {
+                  onSuccess?.(null);
+                },
+                onError: (err) => {
+                  onError?.(err as Error);
+                }
+              });
+
             } catch (err) {
               onError?.(err as Error);
             }
           }}
+          disabled={uploadMutation.isPending}
         >
-          <p><InboxOutlined /></p>
-          <p>클릭하거나 파일을 이 영역으로 드래그하세요</p>
-          <p>이미지 파일을 업로드할 수 있습니다</p>
+          {uploadMutation.isPending ? (
+            <div>업로드 중...</div>
+          ) : (
+            <>
+              <p><InboxOutlined /></p>
+              <p>클릭하거나 파일을 이 영역으로 드래그하세요</p>
+              <p>이미지 파일을 업로드할 수 있습니다</p>
+            </>
+          )}
         </Upload.Dragger>
       )}
     </Modal>

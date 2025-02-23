@@ -39,18 +39,24 @@ export default function ClientImageGrid({
     }));
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
-      queryKey: ["mediaFiles"],
-      queryFn: fetchMediaFiles,
-      initialPageParam: 0,
-      getNextPageParam: (lastPage, allPages) =>
-        lastPage.length === PAGE_SIZE ? allPages.length : undefined,
-      initialData: {
-        pages: [initialFiles],
-        pageParams: [0],
-      },
-    });
+  const { 
+    data, 
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
+    isFetching,
+    status 
+  } = useInfiniteQuery({
+    queryKey: ["mediaFiles"],
+    queryFn: fetchMediaFiles,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === PAGE_SIZE ? allPages.length : undefined,
+    initialData: {
+      pages: [initialFiles],
+      pageParams: [0],
+    },
+  });
 
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
@@ -82,6 +88,7 @@ export default function ClientImageGrid({
 
   return (
     <div>
+      {isFetching && !isFetchingNextPage && <div>로딩중...</div>}
       <div>
         {data?.pages.map((group, i) =>
           group.map((file) => (
@@ -103,6 +110,7 @@ export default function ClientImageGrid({
           ))
         )}
       </div>
+
       <div ref={loadMoreRef} />
       {isFetchingNextPage && <div>추가 데이터 로딩중...</div>}
     </div>

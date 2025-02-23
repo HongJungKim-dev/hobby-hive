@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { IFile } from "@/types/types";
 import { createClient } from "@utils/supabase/server";
 import { redirect } from 'next/navigation';
 import ClientGridWithModal from '@components/ClientGridWithModal';
@@ -12,17 +11,15 @@ export default async function PostsPage() {
     redirect('/login');
   }
 
-  const { data: uploadedFiles, error } = await supabase
+  const { data: files, error } = await supabase
     .from("files_upload")
     .select("*")
     .eq('user_id', user.id)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    return <div>데이터를 불러오는 중 오류가 발생했습니다.</div>;
-  }
+  if (error) throw error;
 
-  const initialFiles = uploadedFiles.map((file: IFile) => ({
+  const initialFiles = files.map(file => ({
     id: file.id,
     file_path: file.file_path,
     description: file.description,
@@ -34,9 +31,8 @@ export default async function PostsPage() {
     <section className="layout-content">
       <h2>내가 올린 게시물</h2>
       <Suspense fallback={<div>로딩중...</div>}>
-        <ClientGridWithModal initialFiles={initialFiles} />
+        <ClientGridWithModal userId={user.id} initialFiles={initialFiles} />
       </Suspense>
     </section>
   );
 }
-
