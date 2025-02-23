@@ -21,6 +21,62 @@
     width: 26rem;
     padding: map-get($spacing, "spacing-4");
     border-right: 1px solid map-get($colors, "border-base");
+    
+    // 태블릿 사이즈
+    @media (max-width: 1024px) {
+      width: 7.2rem;
+      padding: map-get($spacing, "spacing-2");
+      
+      .logo {
+        font-size: 1.4rem;
+        text-align: center;
+      }
+      
+      .nav-item span {
+        display: none;
+      }
+      
+      .nav-item {
+        justify-content: center;
+      }
+    }
+    
+    // 모바일 사이즈
+    @media (max-width: 768px) {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: auto;
+      padding: map-get($spacing, "spacing-2");
+      border-right: none;
+      border-top: 1px solid map-get($colors, "border-base");
+      background-color: map-get($colors, "bg-primary");
+      z-index: 1000;
+      
+      .logo {
+        display: none;
+      }
+      
+      .nav-menu {
+        flex-direction: row;
+        justify-content: space-around;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .nav-item {
+        flex-direction: column;
+        align-items: center;
+        gap: map-get($spacing, "spacing-1");
+        
+        span {
+          display: block;
+          font-size: 1.2rem;
+        }
+      }
+    }
   }
 
   &-content {
@@ -29,6 +85,15 @@
     flex-shrink: 0;
     padding: map-get($spacing, "spacing-3") 20rem;
     gap: map-get($spacing, "spacing-4");
+    
+    @media (max-width: 1024px) {
+      padding: map-get($spacing, "spacing-3") 4rem;
+    }
+    
+    @media (max-width: 768px) {
+      padding: map-get($spacing, "spacing-3") 2rem;
+      padding-bottom: 8rem; // 모바일 하단 네비게이션 높이만큼 여백 추가
+    }
   }
 }
 
@@ -38,6 +103,9 @@
 
 .nav-menu {
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: map-get($spacing, "spacing-2");
 
   .nav-item {
     display: flex;
@@ -45,5 +113,11 @@
     gap: map-get($spacing, "spacing-2");
     padding: map-get($spacing, "spacing-1") 0;
     cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    
+    &:hover {
+      opacity: 0.8;
+    }
   }
 }
