@@ -5,6 +5,7 @@ import { useSession } from "@/hooks/useSession";
 import { supabase } from "@utils/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import "@styles/globals.scss";
 
 export default function ClientProfileButton() {
   const session = useSession();
@@ -12,25 +13,27 @@ export default function ClientProfileButton() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push('/login');
+    router.push("/login");
   };
 
   const handleClick = () => {
     if (session) {
-      router.push('/posts');
+      router.push("/posts");
     } else {
-      router.push('/login');
+      router.push("/login");
     }
   };
 
   return (
-    <li className="nav-item" style={{ cursor: "pointer" }}>
-      <div onClick={handleClick}>
-        <MdPerson size={14} />
-        <span>{session ? "올린글" : "로그인"}</span>
-      </div>
+    <li
+      className="nav-item"
+      style={{ cursor: "pointer" }}
+      onClick={handleClick}
+    >
+      <MdPerson size={14} />
+      <span>{session ? "올린글" : "로그인"}</span>
       {session && (
-        <div onClick={handleSignOut}>
+        <div onClick={handleSignOut} style={{ marginLeft: "1.2rem" }}>
           <span>로그아웃</span>
         </div>
       )}

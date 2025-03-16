@@ -1,0 +1,33 @@
+.user-profile-header {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.profile-container {
+  display: flex;
+  align-items: center;
+}
+
+.profile-image {
+  margin-right: 16px;
+}
+
+.avatar-image {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.user-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}

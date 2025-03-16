@@ -44,28 +44,30 @@ export default function ClientEditModal({
       }
 
       // 2. 새 이미지 업로드
-      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+      const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.]/g, "_");
       const fileName = `${crypto.randomUUID()}-${sanitizedFileName}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from("media")
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("media")
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("media").getPublicUrl(fileName);
 
       return publicUrl;
     },
     onSuccess: (publicUrl) => {
       setUploadedImageUrl(publicUrl);
-      message.success("이미지가 업로드되었습니다. 저장하려면 수정하기를 클릭하세요.");
+      message.success(
+        "이미지가 업로드되었습니다. 저장하려면 수정하기를 클릭하세요."
+      );
     },
     onError: () => {
       message.error("이미지 업로드 중 오류가 발생했습니다.");
-    }
+    },
   });
 
   // 설명 수정 mutation
@@ -73,8 +75,12 @@ export default function ClientEditModal({
     mutationFn: async () => {
       if (!initialData?.id) throw new Error("데이터 ID가 없습니다.");
 
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) throw new Error("인증 정보를 확인할 수 없습니다.");
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user)
+        throw new Error("인증 정보를 확인할 수 없습니다.");
 
       const { error: dbError } = await supabase
         .from("files_upload")
@@ -91,16 +97,16 @@ export default function ClientEditModal({
     onSuccess: () => {
       message.success("게시물이 성공적으로 수정되었습니다.");
       queryClient.invalidateQueries({
-        queryKey: ['mediaFiles'],
+        queryKey: ["mediaFiles"],
         exact: true,
-        refetchType: 'all'
+        refetchType: "all",
       });
       onClose();
     },
     onError: (error) => {
       console.error("Error:", error);
       message.error("수정 중 오류가 발생했습니다.");
-    }
+    },
   });
 
   // 삭제 mutation
@@ -108,8 +114,12 @@ export default function ClientEditModal({
     mutationFn: async () => {
       if (!initialData?.id) throw new Error("데이터 ID가 없습니다.");
 
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) throw new Error("인증 정보를 확인할 수 없습니다.");
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user)
+        throw new Error("인증 정보를 확인할 수 없습니다.");
 
       const { error: dbError } = await supabase
         .from("files_upload")
@@ -122,16 +132,16 @@ export default function ClientEditModal({
     onSuccess: () => {
       message.success("게시물이 성공적으로 삭제되었습니다.");
       queryClient.invalidateQueries({
-        queryKey: ['mediaFiles'],
+        queryKey: ["mediaFiles"],
         exact: true,
-        refetchType: 'all'
+        refetchType: "all",
       });
       onClose();
     },
     onError: (error) => {
       console.error("Error:", error);
       message.error("삭제 중 오류가 발생했습니다.");
-    }
+    },
   });
 
   return (
@@ -167,9 +177,9 @@ export default function ClientEditModal({
         open={isOpen}
         onCancel={onClose}
         footer={
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button 
-              danger 
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <Button
+              danger
               onClick={() => setIsConfirmModalOpen(true)}
               disabled={deleteMutation.isPending || updateMutation.isPending}
             >
@@ -217,6 +227,7 @@ export default function ClientEditModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={updateMutation.isPending}
+              style={{ height: "200px" }}
             />
           </div>
         </div>
