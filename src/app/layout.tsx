@@ -4,7 +4,8 @@ import "./globals.css";
 import Providers from "./providers";
 import localFont from "next/font/local";
 import "@styles/globals.scss";
-import Navigation from '@/components/Navigation';
+import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -73,15 +74,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${spoqaHanSans.variable}`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${spoqaHanSans.variable}`}
+      >
         <Providers>
           {auth}
-          <main className="main --font-spoqa">
-            <article className="layout">
-              <Navigation />
-              {children}
-            </article>
-          </main>
+          <Navigation />
+          <main className="main --font-spoqa">{children}</main>
+          <Footer />
         </Providers>
       </body>
     </html>
