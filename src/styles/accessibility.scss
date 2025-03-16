@@ -1,0 +1,62 @@
+/* 접근성 개선을 위한 글로벌 스타일 */
+
+/* 화면에서만 숨기고 스크린 리더에서는 읽게 하는 클래스 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 포커스 스타일 강화 */
+:focus {
+  outline: 3px solid #4d90fe !important;
+  outline-offset: 2px !important;
+}
+
+/* 색약자를 위한 색상 강화 */
+.btn-primary,
+button[type="primary"] {
+  background-color: #0056b3;
+  color: white;
+  border: 2px solid #003366;
+}
+
+.error-text {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+/* 높은 대비를 제공하는 텍스트 */
+.high-contrast-text {
+  color: #000;
+  background-color: #fff;
+  border: 1px solid #000;
+  padding: 2px 4px;
+}
+
+/* 키보드 사용자를 위한 클릭 가능 요소에 대한 스타일 */
+[role="button"],
+button,
+a {
+  cursor: pointer;
+  padding: 8px;
+  min-height: 44px; /* 모바일에서 터치 영역 확보 */
+  min-width: 44px;
+}
+
+/* 아이콘 버튼 */
+.icon-button {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  cursor: pointer;
+}

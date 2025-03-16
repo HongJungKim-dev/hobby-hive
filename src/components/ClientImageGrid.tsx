@@ -85,25 +85,39 @@ export default function ClientImageGrid({
     };
   }, [handleObserver]);
 
-  if (status === "error") return <div>에러가 발생했습니다</div>;
+  if (status === "error")
+    return (
+      <div role="alert">에러가 발생했습니다. 페이지를 새로고침 해주세요.</div>
+    );
 
   return (
-    <div className="image-grid-wrapper">
+    <section className="image-grid-wrapper" aria-label="취미 이미지 갤러리">
       {isFetching && !isFetchingNextPage && (
-        <div className="loading-indicator">로딩중...</div>
+        <div className="loading-indicator" role="status" aria-live="polite">
+          로딩중...
+        </div>
       )}
-      <div className="image-grid">
+      <ul className="image-grid" role="list">
         {data?.pages.map((group, i) =>
           group.map((file) => (
-            <div
+            <li
               key={file.id}
               className="image-grid-item"
-              onClick={() => onClick && onClick(file)}
+              onClick={() => (onClick ? onClick(file) : undefined)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (onClick) onClick(file);
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`이미지: ${file.description || "설명 없음"}`}
             >
               <div className="image-container">
                 <Image
                   src={file.file_path}
-                  alt={file.description || "업로드된 이미지"}
+                  alt={file.description || "업로드된 취미 이미지"}
                   width={300}
                   height={300}
                   loading="lazy"
@@ -114,15 +128,17 @@ export default function ClientImageGrid({
               {file.description && (
                 <p className="image-description">{file.description}</p>
               )}
-            </div>
+            </li>
           ))
         )}
-      </div>
+      </ul>
 
-      <div ref={loadMoreRef} />
+      <div ref={loadMoreRef} role="none" />
       {isFetchingNextPage && (
-        <div className="loading-more">추가 데이터 로딩중...</div>
+        <div className="loading-more" role="status" aria-live="polite">
+          추가 데이터 로딩중...
+        </div>
       )}
-    </div>
+    </section>
   );
 }

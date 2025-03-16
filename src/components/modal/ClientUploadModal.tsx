@@ -46,7 +46,9 @@ export default function ClientUploadModal({
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     return !!session;
   };
 
@@ -63,9 +65,9 @@ export default function ClientUploadModal({
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("media")
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("media").getPublicUrl(fileName);
 
       return publicUrl;
     },
@@ -75,39 +77,45 @@ export default function ClientUploadModal({
     },
     onError: () => {
       message.error("업로드 중 오류가 발생했습니다.");
-    }
+    },
   });
 
   // 설명 저장 mutation
   const saveMutation = useMutation({
-    mutationFn: async ({ url, description }: { url: string, description: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
+    mutationFn: async ({
+      url,
+      description,
+    }: {
+      url: string;
+      description: string;
+    }) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("로그인이 필요합니다.");
 
-      const { data, error } = await supabase
-        .from("files_upload")
-        .insert([
-          {
-            file_path: url,
-            description,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            user_id: user.id,
-          },
-        ]);
+      const { data, error } = await supabase.from("files_upload").insert([
+        {
+          file_path: url,
+          description,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          user_id: user.id,
+        },
+      ]);
 
       if (error) throw error;
       return data;
     },
-    retry: 1,  // 1번만 재시도
-    retryDelay: 1000,  // 단순히 1초 후 재시도
+    retry: 1, // 1번만 재시도
+    retryDelay: 1000, // 단순히 1초 후 재시도
     onSuccess: (data, variables) => {
       message.success("이미지와 설명이 성공적으로 저장되었습니다.");
       // 쿼리 무효화 및 리페치
       queryClient.invalidateQueries({
-        queryKey: ['mediaFiles'],
+        queryKey: ["mediaFiles"],
         exact: true,
-        refetchType: 'all'
+        refetchType: "all",
       });
       onClose();
     },
@@ -115,9 +123,8 @@ export default function ClientUploadModal({
       console.error("Error:", error);
       message.error("저장 중 오류가 발생했습니다. 자동으로 재시도합니다.");
     },
-    mutationKey: ['saveMedia'],  // mutation 식별 키
+    mutationKey: ["saveMedia"], // mutation 식별 키
   });
-
 
   const handleSaveDescription = async () => {
     if (!uploadedImageUrl) {
@@ -127,13 +134,13 @@ export default function ClientUploadModal({
 
     // mutation이 이미 진행 중이면 새로운 요청은 무시됨
     if (saveMutation.isPending) {
-      message.warning('저장 중입니다. 잠시만 기다려주세요.');
+      message.warning("저장 중입니다. 잠시만 기다려주세요.");
       return;
     }
 
-    saveMutation.mutate({ 
-      url: uploadedImageUrl, 
-      description 
+    saveMutation.mutate({
+      url: uploadedImageUrl,
+      description,
     });
   };
 
@@ -142,7 +149,7 @@ export default function ClientUploadModal({
       title={
         <div className="header">
           {(uploadedImageUrl || isNextStep) && (
-            <ArrowLeftOutlined
+            <button
               onClick={() => {
                 if (isNextStep) {
                   setIsNextStep(false);
@@ -150,12 +157,26 @@ export default function ClientUploadModal({
                   setUploadedImageUrl(null);
                 }
               }}
-            />
+              aria-label="이전 단계로 돌아가기"
+              className="icon-button"
+            >
+              <ArrowLeftOutlined />
+              <span className="sr-only">이전</span>
+            </button>
           )}
-          <span>{isNextStep ? "설명 입력" : "파일 업로드"}</span>
+          <span id="modal-title">
+            {isNextStep ? "설명 입력" : "파일 업로드"}
+          </span>
           <span>
             {uploadedImageUrl && !isNextStep && (
-              <ArrowRightOutlined onClick={() => setIsNextStep(true)} />
+              <button
+                onClick={() => setIsNextStep(true)}
+                aria-label="다음 단계로 진행하기"
+                className="icon-button"
+              >
+                <ArrowRightOutlined />
+                <span className="sr-only">다음</span>
+              </button>
             )}
           </span>
         </div>
@@ -163,23 +184,31 @@ export default function ClientUploadModal({
       open={isOpen}
       onCancel={initializeStateWhenClose}
       footer={null}
+      aria-labelledby="modal-title"
+      maskClosable={false}
+      closeIcon={<span aria-label="닫기">×</span>}
     >
       {isNextStep ? (
         <div className="content-wrapper">
           <Image
             src={uploadedImageUrl!}
-            alt="업로드된 이미지"
+            alt="업로드된 이미지 미리보기"
             width={200}
             height={200}
             objectFit="contain"
           />
           <div className="text-save-area">
+            <label htmlFor="image-description" className="sr-only">
+              이미지 설명
+            </label>
             <Input.TextArea
+              id="image-description"
               rows={4}
               placeholder="이미지에 대한 설명을 입력해주세요"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={saveMutation.isPending}
+              aria-required="true"
             />
             <Button
               type="primary"
@@ -187,8 +216,9 @@ export default function ClientUploadModal({
               onClick={handleSaveDescription}
               loading={saveMutation.isPending}
               disabled={saveMutation.isPending}
+              aria-busy={saveMutation.isPending}
             >
-              {saveMutation.isPending ? '저장중...' : '저장하기'}
+              {saveMutation.isPending ? "저장중..." : "저장하기"}
             </Button>
           </div>
         </div>
@@ -200,8 +230,12 @@ export default function ClientUploadModal({
             try {
               const isAuth = await checkAuth();
               if (!isAuth) {
-                if (window.confirm('로그인이 필요한 서비스입니다. 로그인 하시겠습니까?')) {
-                  router.push('/login');
+                if (
+                  window.confirm(
+                    "로그인이 필요한 서비스입니다. 로그인 하시겠습니까?"
+                  )
+                ) {
+                  router.push("/login");
                 }
                 return;
               }
@@ -212,20 +246,24 @@ export default function ClientUploadModal({
                 },
                 onError: (err) => {
                   onError?.(err as Error);
-                }
+                },
               });
-
             } catch (err) {
               onError?.(err as Error);
             }
           }}
           disabled={uploadMutation.isPending}
+          accept="image/*"
         >
           {uploadMutation.isPending ? (
-            <div>업로드 중...</div>
+            <div role="status" aria-live="polite">
+              업로드 중...
+            </div>
           ) : (
             <>
-              <p><InboxOutlined /></p>
+              <p>
+                <InboxOutlined aria-hidden="true" />
+              </p>
               <p>클릭하거나 파일을 이 영역으로 드래그하세요</p>
               <p>이미지 파일을 업로드할 수 있습니다</p>
             </>

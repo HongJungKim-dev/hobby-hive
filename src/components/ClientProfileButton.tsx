@@ -6,7 +6,7 @@ import { supabase } from "@utils/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import "@styles/globals.scss";
-
+import "./ClientProfileButton.style.scss";
 export default function ClientProfileButton() {
   const session = useSession();
   const router = useRouter();
@@ -31,10 +31,14 @@ export default function ClientProfileButton() {
       onClick={handleClick}
     >
       <MdPerson size={14} />
-      <span>{session ? "올린글" : "로그인"}</span>
+      <button tabIndex={0} className="basic-button">
+        {session ? "올린글" : "로그인"}
+      </button>
       {session && (
         <div onClick={handleSignOut} style={{ marginLeft: "1.2rem" }}>
-          <span>로그아웃</span>
+          <button tabIndex={0} className="basic-button">
+            로그아웃
+          </button>
         </div>
       )}
     </li>
