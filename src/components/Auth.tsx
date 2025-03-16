@@ -3,13 +3,14 @@
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@utils/supabase";
-
+//auth/callback
 export default function AuthComponent() {
   return (
     <Auth
       supabaseClient={supabase}
       appearance={{ theme: ThemeSupa }}
       providers={["google"]}
+      redirectTo="https://hobby-hive-eight.vercel.app/introduce"
       localization={{
         variables: {
           sign_in: {
