@@ -14,7 +14,7 @@ export default function ClientUploadModalButton() {
   const handleClick = () => {
     if (!session) {
       // 로그인하지 않은 경우 로그인 모달로 이동
-      router.push('/login');
+      router.push("/login");
       return;
     }
     // 로그인한 경우 업로드 모달 열기
@@ -23,9 +23,15 @@ export default function ClientUploadModalButton() {
 
   return (
     <>
-      <li className="nav-item" onClick={handleClick} style={{ cursor: "pointer" }}>
+      <li
+        className="nav-item"
+        onClick={handleClick}
+        style={{ cursor: "pointer" }}
+      >
         <MdUpload size={14} />
-        <span>업로드</span>
+        <button className="basic-button" tabIndex={0}>
+          업로드
+        </button>
       </li>
       {session && (
         <ClientUploadModal

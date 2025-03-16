@@ -22,18 +22,35 @@ export default function Navigation() {
   }, []);
 
   return (
-    <nav className={`header-nav ${isScrolled ? "scrolled" : ""}`}>
-      <div className="nav-container">
-        <Link href="/" className="logo">
-          <h1>hobby-hive</h1>
-        </Link>
-        <div className="nav-actions">
-          <Suspense fallback={<div>로딩중...</div>}>
-            <ClientUploadModalButton />
-            <ClientProfileButton />
-          </Suspense>
+    <header>
+      <nav
+        className={`header-nav ${isScrolled ? "scrolled" : ""}`}
+        role="navigation"
+        aria-label="메인 내비게이션"
+      >
+        <div className="nav-container">
+          <Link
+            href="/"
+            className="logo"
+            aria-label="홈페이지로 이동"
+            tabIndex={0}
+          >
+            <h1>hobby-hive</h1>
+          </Link>
+          <div className="nav-actions">
+            <Suspense
+              fallback={
+                <div role="status" aria-live="polite">
+                  로딩중...
+                </div>
+              }
+            >
+              <ClientUploadModalButton />
+              <ClientProfileButton />
+            </Suspense>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
