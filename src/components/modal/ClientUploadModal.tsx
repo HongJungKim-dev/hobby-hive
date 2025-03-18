@@ -149,7 +149,9 @@ export default function ClientUploadModal({
       title={
         <div className="header">
           {(uploadedImageUrl || isNextStep) && (
-            <button
+            <Button
+              type="text"
+              icon={<ArrowLeftOutlined />}
               onClick={() => {
                 if (isNextStep) {
                   setIsNextStep(false);
@@ -158,25 +160,23 @@ export default function ClientUploadModal({
                 }
               }}
               aria-label="이전 단계로 돌아가기"
-              className="icon-button"
             >
-              <ArrowLeftOutlined />
-              <span className="sr-only">이전</span>
-            </button>
+              이전
+            </Button>
           )}
           <span id="modal-title">
             {isNextStep ? "설명 입력" : "파일 업로드"}
           </span>
           <span>
             {uploadedImageUrl && !isNextStep && (
-              <button
+              <Button
+                type="text"
+                icon={<ArrowRightOutlined />}
                 onClick={() => setIsNextStep(true)}
                 aria-label="다음 단계로 진행하기"
-                className="icon-button"
               >
-                <ArrowRightOutlined />
-                <span className="sr-only">다음</span>
-              </button>
+                다음
+              </Button>
             )}
           </span>
         </div>
