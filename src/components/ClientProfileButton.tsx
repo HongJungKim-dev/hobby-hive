@@ -31,14 +31,10 @@ export default function ClientProfileButton() {
       onClick={handleClick}
     >
       <MdPerson size={14} />
-      <button tabIndex={0} className="basic-button">
-        {session ? "올린글" : "로그인"}
-      </button>
+      <button className="basic-button">{session ? "올린글" : "로그인"}</button>
       {session && (
         <div onClick={handleSignOut} style={{ marginLeft: "1.2rem" }}>
-          <button tabIndex={0} className="basic-button">
-            로그아웃
-          </button>
+          <button className="basic-button">로그아웃</button>
         </div>
       )}
     </li>

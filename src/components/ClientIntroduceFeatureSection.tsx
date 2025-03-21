@@ -48,7 +48,6 @@ export default function ClientIntroduceFeatureSection() {
         ref={(el) => {
           featureRefs.current[0] = el;
         }}
-        tabIndex={0}
       >
         <div className="feature-image-container">
           <Image
@@ -76,7 +75,6 @@ export default function ClientIntroduceFeatureSection() {
         ref={(el) => {
           featureRefs.current[1] = el;
         }}
-        tabIndex={0}
       >
         <div className="feature-image-container">
           <Image
@@ -102,7 +100,6 @@ export default function ClientIntroduceFeatureSection() {
         ref={(el) => {
           featureRefs.current[2] = el;
         }}
-        tabIndex={0}
       >
         <div className="feature-image-container">
           <Image
@@ -129,7 +126,6 @@ export default function ClientIntroduceFeatureSection() {
         ref={(el) => {
           featureRefs.current[3] = el;
         }}
-        tabIndex={0}
       >
         <div className="feature-image-container">
           <Image
@@ -155,7 +151,6 @@ export default function ClientIntroduceFeatureSection() {
         ref={(el) => {
           featureRefs.current[4] = el;
         }}
-        tabIndex={0}
       >
         <div className="feature-image-container">
           <Image
