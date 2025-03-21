@@ -29,9 +29,7 @@ export default function ClientUploadModalButton() {
         style={{ cursor: "pointer" }}
       >
         <MdUpload size={14} />
-        <button className="basic-button" tabIndex={0}>
-          업로드
-        </button>
+        <button className="basic-button">업로드</button>
       </li>
       {session && (
         <ClientUploadModal
