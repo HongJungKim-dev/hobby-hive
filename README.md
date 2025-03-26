@@ -6,6 +6,10 @@
 
 https://hobby-hive-eight.vercel.app
 
+## 개인 블로그
+
+https://hongjungkim-dev.tistory.com/1354
+
 ### 소개 페이지
 
 ![alt text](image-7.png)
