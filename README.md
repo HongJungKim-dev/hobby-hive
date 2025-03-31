@@ -42,6 +42,23 @@ https://hongjungkim-dev.tistory.com/1354
 - jest, vercel, git actions
 - Supabase
 
+### 인프라 환경
+
+- Vercel을 활용한 서버리스 아키텍처
+- Supabase를 활용한 백엔드 인프라 구성
+- 사용자 인증 및 권한 관리
+
+### 아키텍처 개요
+
+- **클라이언트 (Next.js)**  
+  ↓ ↑
+- **Vercel**  
+  ↓ ↑
+- **Supabase**  
+  ├── **인증 서비스**  
+  ├── **데이터베이스**  
+  └── **스토리지 서비스**
+
 ## 기능 사항
 
 - 로그인한 사용자는 취미 활동 이미지와 설명을 작성한 게시글을 업로드할 수 있습니다.
