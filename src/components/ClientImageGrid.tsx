@@ -7,6 +7,7 @@ import Image from "next/image";
 import "./ClientImageGrid.style.scss";
 // types
 import { IFile } from "../types/types";
+import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 
 const PAGE_SIZE = 5;
 
@@ -19,9 +20,6 @@ export default function ClientImageGrid({
   initialFiles,
   onClick,
 }: ClientImageGridProps) {
-  const observerRef = useRef<IntersectionObserver>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-
   const fetchMediaFiles = async ({ pageParam = 0 }) => {
     const { data: files, error: filesError } = await supabase
       .from("files_upload")
@@ -59,31 +57,15 @@ export default function ClientImageGrid({
     },
   });
 
-  const handleObserver = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [target] = entries;
-      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+  const loadMoreRef = useIntersectionObserver({
+    onIntersect: () => {
+      if (hasNextPage && !isFetchingNextPage) {
         fetchNextPage();
       }
     },
-    [fetchNextPage, hasNextPage, isFetchingNextPage]
-  );
-
-  useEffect(() => {
-    const element = loadMoreRef.current;
-    if (!element) return;
-
-    observerRef.current = new IntersectionObserver(handleObserver, {
-      threshold: 0.1,
-    });
-    observerRef.current.observe(element);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [handleObserver]);
+    options: { threshold: 0.1 },
+    enabled: !!hasNextPage && !isFetchingNextPage,
+  });
 
   if (status === "error")
     return (
