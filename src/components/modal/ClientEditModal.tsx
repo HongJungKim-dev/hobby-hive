@@ -70,7 +70,7 @@ export default function ClientEditModal({
     },
   });
 
-  // 설명 수정 mutation
+  // 설명 수정 mutation with optimistic updates
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!initialData?.id) throw new Error("데이터 ID가 없습니다.");
@@ -93,23 +93,57 @@ export default function ClientEditModal({
         .eq("user_id", user.id);
 
       if (dbError) throw dbError;
+
+      return {
+        ...initialData,
+        file_path: uploadedImageUrl,
+        description: description,
+        updated_at: new Date().toISOString(),
+      };
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["mediaFiles"] });
+
+      const previousMediaFiles = queryClient.getQueryData(["mediaFiles"]);
+
+      queryClient.setQueryData(["mediaFiles"], (old: IFile[] | undefined) => {
+        if (!old || !initialData?.id) return old;
+        
+        return old.map((file) =>
+          file.id === initialData.id
+            ? {
+                ...file,
+                file_path: uploadedImageUrl,
+                description: description,
+                updated_at: new Date().toISOString(),
+              }
+            : file
+        );
+      });
+
+      return { previousMediaFiles };
+    },
+    onError: (error, variables, context) => {
+      if (context?.previousMediaFiles) {
+        queryClient.setQueryData(["mediaFiles"], context.previousMediaFiles);
+      }
+      console.error("Error:", error);
+      message.error("수정 중 오류가 발생했습니다.");
     },
     onSuccess: () => {
       message.success("게시물이 성공적으로 수정되었습니다.");
+      onClose();
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ["mediaFiles"],
         exact: true,
         refetchType: "all",
       });
-      onClose();
-    },
-    onError: (error) => {
-      console.error("Error:", error);
-      message.error("수정 중 오류가 발생했습니다.");
     },
   });
 
-  // 삭제 mutation
+  // 삭제 mutation with optimistic updates
   const deleteMutation = useMutation({
     mutationFn: async () => {
       if (!initialData?.id) throw new Error("데이터 ID가 없습니다.");
@@ -129,18 +163,44 @@ export default function ClientEditModal({
 
       if (dbError) throw dbError;
     },
+    // Optimistic updates 적용
+    onMutate: async () => {
+      // 진행 중인 refetch를 취소
+      await queryClient.cancelQueries({ queryKey: ["mediaFiles"] });
+
+      // 이전 데이터 스냅샷
+      const previousMediaFiles = queryClient.getQueryData(["mediaFiles"]);
+
+      // 낙관적으로 캐시에서 삭제
+      queryClient.setQueryData(["mediaFiles"], (old: IFile[] | undefined) => {
+        if (!old || !initialData?.id) return old;
+        
+        return old.filter((file) => file.id !== initialData.id);
+      });
+
+      // 컨텍스트 반환
+      return { previousMediaFiles };
+    },
+    // 실패 시 롤백
+    onError: (error, variables, context) => {
+      if (context?.previousMediaFiles) {
+        queryClient.setQueryData(["mediaFiles"], context.previousMediaFiles);
+      }
+      console.error("Error:", error);
+      message.error("삭제 중 오류가 발생했습니다.");
+    },
+    // 성공 시
     onSuccess: () => {
       message.success("게시물이 성공적으로 삭제되었습니다.");
+      onClose();
+    },
+    // 성공/실패 관계없이 최종적으로 실행
+    onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ["mediaFiles"],
         exact: true,
         refetchType: "all",
       });
-      onClose();
-    },
-    onError: (error) => {
-      console.error("Error:", error);
-      message.error("삭제 중 오류가 발생했습니다.");
     },
   });
 

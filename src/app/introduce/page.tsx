@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: "다양한 취미 활동을 공유하는 공간입니다.",
 };
 
+// 클라이언트 컴포넌트로 분리
+import StartButton from "@components/StartButton";
+
 export default async function IntroducePage() {
   const supabase = await createClient();
   const { data: features, error } = await supabase
@@ -37,9 +40,7 @@ export default async function IntroducePage() {
           </h1>
           <p>다양한 취미를 공유하고 다른 사람들의 취미를 구경해보세요!</p>
           <div className="button-wrapper">
-            <Link href="/all" className="start-button">
-              시작하기
-            </Link>
+            <StartButton />
           </div>
         </div>
         <div className="hero-image">
