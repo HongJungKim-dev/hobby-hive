@@ -5,7 +5,7 @@ import { supabase } from "@utils/supabase";
 import { useState } from "react";
 import Image from "next/image";
 import { IFile } from "@/types/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, InfiniteData } from "@tanstack/react-query";
 // style
 import "./ClientUploadModal.scss";
 
@@ -106,19 +106,25 @@ export default function ClientEditModal({
 
       const previousMediaFiles = queryClient.getQueryData(["mediaFiles"]);
 
-      queryClient.setQueryData(["mediaFiles"], (old: IFile[] | undefined) => {
+      // Infinite query 구조에 맞게 업데이트
+      queryClient.setQueryData(["mediaFiles"], (old: InfiniteData<IFile[]>) => {
         if (!old || !initialData?.id) return old;
         
-        return old.map((file) =>
-          file.id === initialData.id
-            ? {
-                ...file,
-                file_path: uploadedImageUrl,
-                description: description,
-                updated_at: new Date().toISOString(),
-              }
-            : file
-        );
+        return {
+          ...old,
+          pages: old.pages.map((page: IFile[]) =>
+            page.map((file) =>
+              file.id === initialData.id
+                ? {
+                    ...file,
+                    file_path: uploadedImageUrl,
+                    description: description,
+                    updated_at: new Date().toLocaleDateString("ko-KR"),
+                  }
+                : file
+            )
+          ),
+        };
       });
 
       return { previousMediaFiles };
@@ -171,11 +177,16 @@ export default function ClientEditModal({
       // 이전 데이터 스냅샷
       const previousMediaFiles = queryClient.getQueryData(["mediaFiles"]);
 
-      // 낙관적으로 캐시에서 삭제
-      queryClient.setQueryData(["mediaFiles"], (old: IFile[] | undefined) => {
+      // Infinite query 구조에 맞게 삭제
+      queryClient.setQueryData(["mediaFiles"], (old: InfiniteData<IFile[]>) => {
         if (!old || !initialData?.id) return old;
         
-        return old.filter((file) => file.id !== initialData.id);
+        return {
+          ...old,
+          pages: old.pages.map((page: IFile[]) =>
+            page.filter((file) => file.id !== initialData.id)
+          ),
+        };
       });
 
       // 컨텍스트 반환

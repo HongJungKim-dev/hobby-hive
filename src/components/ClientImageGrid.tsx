@@ -92,12 +92,14 @@ export default function ClientImageGrid({
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // 1초부터 시작해서 최대 30초까지
   });
 
+  const loadMoreCallback = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   const loadMoreRef = useIntersectionObserver({
-    onIntersect: () => {
-      if (hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    },
+    onIntersect: loadMoreCallback,
     options: { threshold: 0.1 },
     enabled: !!hasNextPage && !isFetchingNextPage,
   });

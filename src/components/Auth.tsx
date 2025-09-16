@@ -5,12 +5,20 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@utils/supabase";
 //auth/callback
 export default function AuthComponent() {
+  const getRedirectUrl = () => {
+    if (process.env.NODE_ENV === 'development') {
+      return 'http://localhost:3000/introduce';
+    }
+    return `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/introduce`;
+  };
+
   return (
     <Auth
       supabaseClient={supabase}
       appearance={{ theme: ThemeSupa }}
       providers={["google"]}
-      redirectTo={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/introduce`}
+      redirectTo={getRedirectUrl()}
+      magicLink={false}
       localization={{
         variables: {
           sign_in: {
