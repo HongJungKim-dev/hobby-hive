@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import { supabase } from "@utils/supabase";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { Empty, Button } from "antd";
 import Image from "next/image";
 import "./ClientImageGrid.style.scss";
 // types
@@ -20,22 +21,53 @@ export default function ClientImageGrid({
   initialFiles,
   onClick,
 }: ClientImageGridProps) {
-  const fetchMediaFiles = async ({ pageParam = 0 }) => {
-    const { data: files, error: filesError } = await supabase
-      .from("files_upload")
-      .select("*")
-      .range(pageParam * PAGE_SIZE, (pageParam + 1) * PAGE_SIZE - 1)
-      .order("created_at", { ascending: false });
+  const queryClient = useQueryClient();
 
-    if (filesError) throw filesError;
+  const fetchMediaFiles = async ({
+    pageParam = 0,
+    signal,
+  }: {
+    pageParam?: number;
+    signal?: AbortSignal;
+  }) => {
+    if (signal?.aborted) {
+      throw new Error("ABORTED");
+    }
 
-    return files.map((file) => ({
-      ...file,
-      created_at: new Date(file.created_at).toLocaleDateString("ko-KR"),
-      updated_at: file.updated_at
-        ? new Date(file.updated_at).toLocaleDateString("ko-KR")
-        : null,
-    }));
+    try {
+      const { data: files, error: filesError } = await supabase
+        .from("files_upload")
+        .select("*")
+        .range(pageParam * PAGE_SIZE, (pageParam + 1) * PAGE_SIZE - 1)
+        .order("created_at", { ascending: false });
+
+      if (signal?.aborted) {
+        throw new Error("ABORTED");
+      }
+
+      if (filesError) throw filesError;
+
+      return files.map((file: IFile) => ({
+        ...file,
+        created_at: new Date(file.created_at).toLocaleDateString("ko-KR"),
+        updated_at: file.updated_at
+          ? new Date(file.updated_at).toLocaleDateString("ko-KR")
+          : null,
+      }));
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        console.log("쿼리가 취소되었습니다.");
+        throw new Error("ABORTED");
+      }
+      if (
+        signal?.aborted ||
+        (error instanceof Error && error.message === "ABORTED")
+      ) {
+        console.log("쿼리가 취소되었습니다.");
+        throw new Error("ABORTED");
+      }
+      throw error;
+    }
   };
 
   const {
@@ -45,6 +77,8 @@ export default function ClientImageGrid({
     isFetchingNextPage,
     isFetching,
     status,
+    error,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ["mediaFiles"],
     queryFn: fetchMediaFiles,
@@ -55,6 +89,14 @@ export default function ClientImageGrid({
       pages: [initialFiles],
       pageParams: [0],
     },
+    retry: (failureCount, error: Error) => {
+      if (error.message === "ABORTED") {
+        return false;
+      }
+
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const loadMoreRef = useIntersectionObserver({
@@ -67,10 +109,34 @@ export default function ClientImageGrid({
     enabled: !!hasNextPage && !isFetchingNextPage,
   });
 
-  if (status === "error")
+  if (status === "error") {
     return (
-      <div role="alert">에러가 발생했습니다. 페이지를 새로고침 해주세요.</div>
+      <section className="image-grid-wrapper" aria-label="취미 이미지 갤러리">
+        <Empty
+          image={Empty.PRESENTED_IMAGE_DEFAULT}
+          description="데이터를 불러오는데 실패했습니다"
+        >
+          <Button type="primary" onClick={() => refetch()}>
+            다시 시도
+          </Button>
+        </Empty>
+      </section>
     );
+  }
+
+  const allFiles = data?.pages.flatMap((page) => page) || [];
+  if (!isFetching && allFiles.length === 0) {
+    return (
+      <section className="image-grid-wrapper" aria-label="취미 이미지 갤러리">
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description="아직 업로드된 이미지가 없습니다"
+        >
+          <Button type="primary">첫 번째 이미지 업로드하기</Button>
+        </Empty>
+      </section>
+    );
+  }
 
   return (
     <section className="image-grid-wrapper" aria-label="취미 이미지 갤러리">

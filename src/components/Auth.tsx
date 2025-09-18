@@ -10,7 +10,7 @@ export default function AuthComponent() {
       supabaseClient={supabase}
       appearance={{ theme: ThemeSupa }}
       providers={["google"]}
-      redirectTo="https://hobby-hive-eight.vercel.app/introduce"
+      redirectTo={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/introduce`}
       localization={{
         variables: {
           sign_in: {

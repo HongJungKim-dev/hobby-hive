@@ -4,6 +4,7 @@ import "./page.style.scss";
 import ClientIntroduceFeatureSection from "@/components/ClientIntroduceFeatureSection";
 import { Metadata } from "next";
 import { createClient } from "@utils/supabase/server";
+import StartButton from "@components/StartButton";
 
 export const metadata: Metadata = {
   title: "Hobby Hive - 취미 공유 커뮤니티",
@@ -37,9 +38,7 @@ export default async function IntroducePage() {
           </h1>
           <p>다양한 취미를 공유하고 다른 사람들의 취미를 구경해보세요!</p>
           <div className="button-wrapper">
-            <Link href="/all" className="start-button">
-              시작하기
-            </Link>
+            <StartButton />
           </div>
         </div>
         <div className="hero-image">
